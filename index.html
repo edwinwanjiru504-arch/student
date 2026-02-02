@@ -1,0 +1,108 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fortune University | Full Smart Portal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{margin:0;font-family:Arial;background:#eef1f5}
+header{background:#08304b;color:white;padding:15px;text-align:center}
+.logo{display:flex;justify-content:center;gap:10px;align-items:center}
+.circle{width:45px;height:45px;border-radius:50%;background:white;color:#08304b;font-weight:bold;display:flex;align-items:center;justify-content:center}
+.container{max-width:1200px;margin:auto;padding:20px}
+.card{background:white;padding:20px;border-radius:8px;margin-bottom:15px;box-shadow:0 2px 6px rgba(0,0,0,.1)}
+input,select,textarea,button{width:100%;padding:10px;margin:6px 0}
+button{background:#08304b;color:white;border:none;border-radius:5px;cursor:pointer}
+.hidden{display:none}
+.menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.box{background:#dde6ee;padding:15px;text-align:center;border-radius:6px;cursor:pointer}
+.page{page-break-after:always}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid #bbb;padding:6px}
+th{background:#dde6ee}
+</style>
+</head>
+<body>
+<header>
+<div class="logo"><div class="circle">FU</div><h2>Fortune University Integrated Portal</h2></div>
+</header><div class="container"><!-- REGISTRATION --><div class="card" id="signup">
+<h3>Student Registration</h3>
+<input id="sname" placeholder="Full Name">
+<select id="course"><option>Computer Science</option><option>Education</option><option>Business</option><option>Information Technology</option></select>
+<input type="file" id="photo">
+<button onclick="registerStudent()">Register</button>
+<p id="regshow"></p>
+</div><!-- LOGIN --><div class="card" id="login">
+<h3>Student Login</h3>
+<input id="lreg" placeholder="Registration Number">
+<input id="lpass" type="password" placeholder="Password">
+<button onclick="loginStudent()">Login</button>
+<p onclick="forgotPassword()">Forgot password?</p>
+<p onclick="showAdminLogin()">Admin Login</p>
+</div><!-- ADMIN LOGIN --><div class="card hidden" id="adminLogin">
+<h3>Admin Login</h3>
+<input id="adminUser" placeholder="Username">
+<input id="adminPass" type="password">
+<button onclick="loginAdmin()">Login</button>
+</div><!-- STUDENT DASH --><div class="hidden" id="studentDash">
+<div class="card"><h3 id="welcome"></h3><img id="pimg" width="80"><p id="showReg"></p></div>
+<div class="menu">
+<div class="box" onclick="openPage('admission')">Admission Letter</div>
+<div class="box" onclick="openPage('semester')">Semester Registration</div>
+<div class="box" onclick="openPage('results')">Results + GPA</div>
+<div class="box" onclick="openPage('fees')">Fee Statement</div>
+<div class="box" onclick="openPage('gate')">Gate Pass</div>
+<div class="box" onclick="openPage('exam')">Exam Card</div>
+<div class="box" onclick="openPage('idcard')">Student ID</div>
+<div class="box" onclick="openPage('changepass')">Change Password</div>
+<div class="box" onclick="logout()">Logout</div>
+</div>
+</div><!-- ADMIN DASH --><div class="hidden" id="adminDash">
+<div class="card"><h3>Admin Dashboard</h3></div>
+<div class="card">
+<input id="search" placeholder="Search Reg" onkeyup="loadTable()">
+<input id="areg" placeholder="Student Reg">
+<input id="abal" placeholder="Fee Balance">
+<textarea id="units" placeholder="Unit Marks e.g Math:70, English:65"></textarea>
+<button onclick="saveAdmin()">Save</button>
+<button onclick="exportExcel()">Export Excel</button>
+</div>
+<div class="card"><table id="studentTable"></table></div>
+</div><!-- ADMISSION --><div class="card hidden" id="admission"><button onclick="window.print()">PDF</button>
+<div class="page"><h2>FORTUNE UNIVERSITY</h2><p>Name: <span id="aname"></span></p><p>Reg: <span id="areg2"></span></p><p>Course: <span id="acourse"></span></p><p>You are admitted.</p><h4>Joining Instructions</h4><ul><li>Certificates</li><li>2 photos</li><li>50% fees</li></ul></div>
+<div class="page"><h4>Requirements</h4><ul><li>Laptop</li><li>Stationery</li></ul><p>Registrar Academic Affairs</p></div></div><!-- SEMESTER --><div class="card hidden" id="semester"><h3>Semester Registration</h3>
+<select id="sem"><option>Semester 1</option><option>Semester 2</option></select>
+<textarea id="unitsel" placeholder="Enter Units"></textarea>
+<button onclick="saveSemester()">Register Semester</button></div><!-- RESULTS --><div class="card hidden" id="results"><button onclick="window.print()">PDF</button><h3>Results</h3><pre id="showResults"></pre><h4>GPA: <span id="gpa"></span></h4></div><div class="card hidden" id="fees"><button onclick="window.print()">PDF</button><p id="showFees"></p></div>
+<div class="card hidden" id="gate"><button onclick="window.print()">PDF</button><p>Gate Pass: CLEARED</p></div>
+<div class="card hidden" id="exam"><button onclick="window.print()">PDF</button><p>Exam Card Semester</p></div><div class="card hidden" id="idcard"><button onclick="window.print()">Print ID</button><h3>Student ID</h3><img id="pid" width="80"><p id="idname"></p><p id="idreg"></p></div><div class="card hidden" id="changepass"><input id="newpass"><button onclick="changePass()">Update</button></div></div><script>
+let students=JSON.parse(localStorage.getItem('fortune')||'{}');
+let current='';
+function genReg(){return 'CB1/'+Math.floor(1000+Math.random()*9000)+'/26'}
+
+function registerStudent(){let r=genReg();let file=photo.files[0];let reader=new FileReader();reader.onload=()=>{students[r]={name:sname.value,course:course.value,pass:'1234',fees:'Not set',results:'',photo:reader.result,semester:'',units:''};localStorage.setItem('fortune',JSON.stringify(students));regshow.innerText='Reg: '+r+' Password:1234'};if(file)reader.readAsDataURL(file)}
+
+function loginStudent(){let r=lreg.value;if(students[r]&&students[r].pass===lpass.value){current=r;signup.classList.add('hidden');login.classList.add('hidden');studentDash.classList.remove('hidden');welcome.innerText='Welcome '+students[r].name;showReg.innerText=r;pimg.src=students[r].photo;aname.innerText=students[r].name;areg2.innerText=r;acourse.innerText=students[r].course;showFees.innerText='Balance: '+students[r].fees;showResults.innerText=students[r].results;calcGPA();pid.src=students[r].photo;idname.innerText=students[r].name;idreg.innerText=r}else alert('Invalid')}
+
+function forgotPassword(){let r=prompt('Reg');if(students[r]){students[r].pass=r;localStorage.setItem('fortune',JSON.stringify(students));alert('Reset to Reg')}}
+
+function showAdminLogin(){signup.classList.add('hidden');login.classList.add('hidden');adminLogin.classList.remove('hidden')}
+
+function loginAdmin(){if(adminUser.value==='admin'&&adminPass.value==='admin'){adminLogin.classList.add('hidden');adminDash.classList.remove('hidden');loadTable()}else alert('Wrong')}
+
+function saveAdmin(){let r=areg.value;if(students[r]){students[r].fees=abal.value;students[r].results=units.value;localStorage.setItem('fortune',JSON.stringify(students));loadTable()}}
+
+function saveSemester(){students[current].semester=sem.value;students[current].units=unitsel.value;localStorage.setItem('fortune',JSON.stringify(students));alert('Semester Registered')}
+
+function calcGPA(){let res=students[current].results.split(',');let total=0,count=0;res.forEach(x=>{let m=parseInt(x.split(':')[1]);if(m){total+=m;count++}});if(count>0)gpa.innerText=(total/count/20).toFixed(2)}
+
+function loadTable(){let t=document.getElementById('studentTable');t.innerHTML='<tr><th>Reg</th><th>Name</th><th>Course</th><th>Fees</th><th>Results</th></tr>';let q=search.value||'';for(let r in students){if(r.includes(q))t.innerHTML+=`<tr><td>${r}</td><td>${students[r].name}</td><td>${students[r].course}</td><td>${students[r].fees}</td><td>${students[r].results}</td></tr>`}}
+
+function exportExcel(){let csv='Reg,Name,Course,Fees,Results
+';for(let r in students){csv+=`${r},${students[r].name},${students[r].course},${students[r].fees},${students[r].results}
+`};let a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='students.csv';a.click()}
+
+function openPage(id){['admission','semester','results','fees','gate','exam','idcard','changepass'].forEach(x=>document.getElementById(x).classList.add('hidden'));document.getElementById(id).classList.remove('hidden')}
+function changePass(){students[current].pass=newpass.value;localStorage.setItem('fortune',JSON.stringify(students));alert('Updated')}
+function logout(){location.reload()}
+</script></body>
+</html>
